@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kresling Design Platform Prototype</title>
+  <script src="platform_data.js"></script>
+  <script src="deeponet_model.js"></script>
+  <style>
+    :root{
+      --purple:#6f32a8; --purple2:#8d59c7; --ink:#20202a; --muted:#666071;
+      --green:#69a842; --teal:#008083; --pink:#f49a97; --pale:#f2edf7;
+      --line:#d8cce6; --bg:#fbfaf8; --card:#ffffff;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(135deg,#fbfaf8 0%,#f4f0f8 52%,#fff 100%);color:var(--ink);font-family:"Aptos Display","Segoe UI",sans-serif}
+    header{padding:24px 34px 18px;border-bottom:3px solid #f2b3b0;background:#fff;display:flex;align-items:flex-end;gap:24px}
+    .tag{background:var(--purple);color:#fff;border-radius:10px;padding:10px 18px;font-weight:800;box-shadow:0 5px 12px #0002}
+    h1{margin:0;color:var(--purple);font-size:34px;line-height:1.05}
+    .sub{color:var(--muted);font-size:14px;margin-top:7px}
+    main{padding:24px 34px 36px;display:grid;grid-template-columns:330px 1fr 360px;gap:22px}
+    section{background:var(--card);border:2px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 8px 22px #4a336b12}
+    h2{margin:0 0 14px;color:var(--purple);font-size:19px}
+    h3{margin:16px 0 8px;color:var(--teal);font-size:14px;text-transform:uppercase;letter-spacing:.05em}
+    label{display:block;font-size:12px;color:var(--muted);font-weight:800;margin:13px 0 5px}
+    input[type=range]{width:100%;accent-color:var(--purple)}
+    input[type=number]{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px}
+    .row{display:grid;grid-template-columns:1fr 78px;gap:10px;align-items:center}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    button,a.button{border:2px solid var(--purple);background:#fff;color:var(--purple);font-weight:800;border-radius:12px;padding:10px 13px;text-decoration:none;cursor:pointer}
+    button.primary{background:var(--purple);color:#fff}
+    .metricGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:15px}
+    .metric{border-left:8px solid var(--green);background:#fff;border-radius:14px;padding:14px 14px;box-shadow:0 3px 9px #0002}
+    .metric.pink{border-left-color:var(--pink)} .metric.teal{border-left-color:var(--teal)}
+    .metric .k{font-size:12px;color:var(--muted);font-weight:800}
+    .metric .v{font-size:29px;font-weight:900;color:var(--green);margin-top:4px}
+    .metric.pink .v{color:var(--pink)} .metric.teal .v{color:var(--teal)}
+    .metric .u{font-size:11px;color:var(--muted)}
+    canvas{width:100%;height:300px;border:1px solid var(--line);border-radius:18px;background:#fff}
+    .evidence{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+    .ev{border:2px solid var(--line);border-radius:18px;padding:12px;background:#fff}
+    .ev img{width:100%;height:160px;object-fit:contain;background:#fff;border-radius:12px}
+    .ev a{display:block;margin-top:8px;color:var(--purple);font-weight:800;text-align:center}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th,td{border-bottom:1px solid #e8e1ef;padding:8px 6px;text-align:right}
+    th:first-child,td:first-child{text-align:left}
+    th{color:var(--purple)}
+    .gate{border-left:8px solid var(--pink);background:#fff7f6;border-radius:14px;padding:14px;margin-bottom:12px}
+    .gate.green{border-left-color:var(--green);background:#f7fbf4}
+    .gate b{display:block;color:var(--purple);margin-bottom:6px}
+    .taskbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+    .task{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff}
+    .task b{display:block;color:var(--purple);font-size:12px}
+    .task span{font-size:13px;color:var(--ink);font-weight:800}
+    .optGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#fff}
+    .pill{display:inline-block;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:900}
+    .pill.ok{background:#edf7e9;color:var(--green)} .pill.warn{background:#fff0ef;color:#cc6763}
+    .small{font-size:12px;color:var(--muted);line-height:1.45}
+    .status{padding:10px 12px;background:var(--pale);border-radius:12px;color:var(--purple);font-weight:800;margin-top:10px}
+    footer{padding:0 34px 26px;color:var(--muted);font-size:12px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="tag">Prototype</div>
+    <div>
+      <h1>Kresling Data-Driven Design Platform</h1>
+      <div class="sub">Reduced-model forward query + inverse candidate search + FEM-gated credibility boundary</div>
+    </div>
+  </header>
+  <main>
+    <section>
+      <h2>1. Design Input</h2>
+      <div class="small">Current platform uses a browser-side DeepONet surrogate trained on the calibrated reduced-model dataset. It does not run new Abaqus jobs yet.</div>
+      <label>crease rotational stiffness k_r</label>
+      <div class="row"><input id="kr" type="range" min="0.009" max="0.036" step="0.0001"><input id="krn" type="number" step="0.0001"></div>
+      <label>payload / moving mass m (g)</label>
+      <div class="row"><input id="mg" type="range" min="1.0" max="5.5" step="0.01"><input id="mgn" type="number" step="0.01"></div>
+      <label>inertia factor I_fac</label>
+      <div class="row"><input id="ifac" type="range" min="0.35" max="1.85" step="0.01"><input id="ifacn" type="number" step="0.01"></div>
+      <div class="btns">
+        <button class="primary" id="run">Run forward query</button>
+        <button id="random">Sample design</button>
+      </div>
+      <h3>Inverse Target</h3>
+      <label>target height H* (mm)</label>
+      <input id="targetH" type="number" value="104" step="1">
+      <label>target spin omega* (rad/ms)</label>
+      <input id="targetSpin" type="number" value="-0.144" step="0.001">
+      <button class="primary" id="inverse" style="margin-top:14px;width:100%">Find candidate designs</button>
+      <h3>Optimization Config</h3>
+      <label>objective function</label>
+      <select id="objective">
+        <option value="match">match target height + spin</option>
+        <option value="height">maximize height under constraints</option>
+        <option value="field">minimize trigger field under target</option>
+        <option value="balanced">balanced score</option>
+      </select>
+      <div class="optGrid">
+        <div><label>max Btrig_hi (T)</label><input id="maxB" type="number" value="2.4" step="0.1"></div>
+        <div><label>max mass (g)</label><input id="maxM" type="number" value="5.5" step="0.1"></div>
+      </div>
+      <button class="primary" id="optimize" style="margin-top:14px;width:100%">Run candidate search</button>
+      <div class="status" id="status">Ready: 240 reduced-model designs loaded.</div>
+    </section>
+    <section>
+      <h2>2. Reduced-Model Prediction</h2>
+      <div class="taskbar">
+        <div class="task"><b>task status</b><span id="taskStatus">ready</span></div>
+        <div class="task"><b>model</b><span>DeepONet</span></div>
+        <div class="task"><b>algorithm</b><span>operator search</span></div>
+        <div class="task"><b>data boundary</b><span>no FEM mixing</span></div>
+      </div>
+      <div class="metricGrid">
+        <div class="metric"><div class="k">height</div><div class="v" id="H">--</div><div class="u">Hcom at 40 ms, mm</div></div>
+        <div class="metric teal"><div class="k">velocity</div><div class="v" id="V">--</div><div class="u">CoM velocity, m/s</div></div>
+        <div class="metric pink"><div class="k">spin</div><div class="v" id="S">--</div><div class="u">rad/ms</div></div>
+      </div>
+      <canvas id="plot" width="900" height="300"></canvas>
+      <div class="evidence">
+        <div class="ev">
+          <img src="assets/reduced_model_jump_enhanced.gif" alt="reduced model animation">
+          
+        </div>
+        <div class="ev">
+          <img src="assets/fem_odb_jump.gif" alt="FEM animation">
+          <a href="assets/fem_odb_jump.gif" target="_blank">Open FEM GIF</a>
+        </div>
+      </div>
+    </section>
+    <section>
+      <h2>3. FEM Gate & Error</h2>
+      <div class="gate green"><b>What is running now</b>Forward prediction uses DeepONet in the browser; optimization samples the operator, not nearest-neighbor lookup.</div>
+      <div class="gate"><b>Reduced model vs FEM anchor</b>Use these as credibility bounds, not exact uncertainty for every design.</div>
+      <div class="metricGrid" style="grid-template-columns:1fr">
+        <div class="metric pink"><div class="k">liftoff time error</div><div class="v">±4.4%</div><div class="u">t_lift, reduced vs FEM</div></div>
+        <div class="metric pink"><div class="k">top velocity error</div><div class="v">±7%</div><div class="u">v_top, mesh caveat applies</div></div>
+        <div class="metric pink"><div class="k">spin error</div><div class="v">±8.2%</div><div class="u">spin rate, fixture endpoint</div></div>
+      </div>
+      <div class="btns">
+        
+        
+      </div>
+      <h3>Inverse candidates</h3>
+      <table id="candidates"></table>
+      <h3>Optimized candidates</h3>
+      <table id="optTable"></table>
+      <div class="small" style="margin-top:10px">Optimization uses the DeepONet reduced-model operator. FEM data is not used as a training label; it remains a gate for validation.</div>
+    </section>
+  </main>
+  <footer>Scope: reduced-model platform prototype. FEM evidence is currently linked and used as calibration gate, not automatically launched.</footer>
+  <script>
+    const DATA = window.KRESLING_PLATFORM_DATA;
+    const MODEL = window.KRESLING_DEEPONET_MODEL;
+    const designs = DATA.designs;
+    const refs = { kr:0.0330, mg:2.0, ifac:1.0 };
+    const ranges = {};
+    for(const key of ['k_r','m_g','Ifac','Hcom_mm','vcom_mps','spin_radms','Btrig_hi_T']){
+      ranges[key]=[Math.min(...designs.map(d=>d[key])), Math.max(...designs.map(d=>d[key]))];
+    }
+    function $(id){return document.getElementById(id)}
+    function sync(a,b){ $(a).addEventListener('input',()=>{$(b).value=$(a).value; update()}); $(b).addEventListener('input',()=>{$(a).value=$(b).value; update()}) }
+    $('kr').value=$('krn').value=refs.kr; $('mg').value=$('mgn').value=refs.mg; $('ifac').value=$('ifacn').value=refs.ifac;
+    sync('kr','krn'); sync('mg','mgn'); sync('ifac','ifacn');
+    function norm(v,k){const [a,b]=ranges[k]; return (v-a)/(b-a)}
+    function dist(d, q){
+      return Math.hypot(1.6*(norm(d.k_r,'k_r')-norm(q.k_r,'k_r')), norm(d.m_g,'m_g')-norm(q.m_g,'m_g'), norm(d.Ifac,'Ifac')-norm(q.Ifac,'Ifac'));
+    }
+    function nearest(q, n=5){return [...designs].sort((a,b)=>dist(a,q)-dist(b,q)).slice(0,n)}
+    function silu(x){return x/(1+Math.exp(-x))}
+    function dense(v, layer, act=true){
+      const out = layer.bias.map((b,i)=>{
+        let s=b; const w=layer.weight[i];
+        for(let j=0;j<v.length;j++) s += w[j]*v[j];
+        return act ? silu(s) : s;
+      });
+      return out;
+    }
+    function mlp(v, layers){
+      let z=v;
+      for(let i=0;i<layers.length;i++) z=dense(z,layers[i],i<layers.length-1);
+      return z;
+    }
+    function deeponet(q){
+      const x=[q.k_r,q.m_g,q.Ifac].map((v,i)=>(v-MODEL.inputMean[i])/MODEL.inputStd[i]);
+      const b=mlp(x, MODEL.branch);
+      const yn=[];
+      for(const sensor of MODEL.sensors){
+        const t=mlp([sensor], MODEL.trunk);
+        let s=MODEL.bias;
+        for(let i=0;i<b.length;i++) s += b[i]*t[i];
+        yn.push(s);
+      }
+      const out={};
+      MODEL.outputs.forEach((name,i)=>{out[name]=yn[i]*MODEL.outputStd[i]+MODEL.outputMean[i]});
+      return out;
+    }
+    function query(){return {k_r:+$('kr').value, m_g:+$('mg').value, Ifac:+$('ifac').value}}
+    function update(){
+      const q=query(); const near=nearest(q,6); const pred=deeponet(q);
+      $('H').textContent=pred.Hcom_mm.toFixed(1); $('V').textContent=pred.vcom_mps.toFixed(2); $('S').textContent=pred.spin_radms.toFixed(3);
+      $('status').textContent=`DeepONet forward prediction complete. Nearest training distance ${dist(near[0],q).toFixed(3)} is shown only as domain warning.`;
+      drawPlot(q, near[0], pred);
+    }
+    function drawPlot(q, best, pred){
+      const c=$('plot'), ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+      ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+      ctx.strokeStyle='#d8cce6'; ctx.lineWidth=1; for(let i=0;i<6;i++){let y=35+i*42;ctx.beginPath();ctx.moveTo(55,y);ctx.lineTo(860,y);ctx.stroke()}
+      function sx(v){return 55 + norm(v,'k_r')*805} function sy(v){return 260 - norm(v,'Hcom_mm')*220}
+      ctx.fillStyle='rgba(111,50,168,.18)'; for(const d of designs){ctx.beginPath();ctx.arc(sx(d.k_r), sy(d.Hcom_mm), 3,0,7);ctx.fill()}
+      ctx.fillStyle='#f49a97'; ctx.beginPath();ctx.arc(sx(best.k_r), sy(best.Hcom_mm), 8,0,7);ctx.fill();
+      ctx.fillStyle='#008083'; ctx.font='bold 18px Segoe UI'; ctx.fillText('Design-space map: k_r vs predicted height',55,24);
+      ctx.fillStyle='#666071'; ctx.font='12px Segoe UI'; ctx.fillText(`DeepONet query k_r=${q.k_r.toFixed(4)}, m=${q.m_g.toFixed(2)}g, I_fac=${q.Ifac.toFixed(2)} | predicted H=${pred.Hcom_mm.toFixed(1)}mm`,55,287);
+      ctx.fillStyle='#20202a'; ctx.fillText('higher jump',760,50); ctx.fillText('stiffer crease',735,276);
+    }
+    function femGate(d){
+      const okB = d.Btrig_hi_T <= +$('maxB').value;
+      const okM = d.m_g <= +$('maxM').value;
+      return okB && okM;
+    }
+    function gateLabel(d){
+      return femGate(d) ? '<span class="pill ok">reduced-pass</span>' : '<span class="pill warn">constraint warn</span>';
+    }
+    function inverse(){
+      const H=+$('targetH').value, S=+$('targetSpin').value;
+      const scored=sampleCandidates(900).map(q=>({...q,...deeponet(q)}))
+        .map(d=>({...d,score:Math.hypot((d.Hcom_mm-H)/35,(d.spin_radms-S)/0.08)})).sort((a,b)=>a.score-b.score).slice(0,5);
+      const rows=['<tr><th>rank</th><th>k_r</th><th>m(g)</th><th>I_fac</th><th>H(mm)</th><th>spin</th><th>B_hi(T)</th><th>gate</th></tr>'];
+      scored.forEach((d,i)=>rows.push(`<tr><td>${i+1}</td><td>${d.k_r.toFixed(4)}</td><td>${d.m_g.toFixed(2)}</td><td>${d.Ifac.toFixed(2)}</td><td>${d.Hcom_mm.toFixed(1)}</td><td>${d.spin_radms.toFixed(3)}</td><td>${d.Btrig_hi_T.toFixed(2)}</td><td>${gateLabel(d)}</td></tr>`));
+      $('candidates').innerHTML=rows.join('');
+    }
+    function sampleCandidates(n){
+      const arr=[];
+      for(let i=0;i<n;i++){
+        arr.push({
+          k_r:ranges.k_r[0]+Math.random()*(ranges.k_r[1]-ranges.k_r[0]),
+          m_g:ranges.m_g[0]+Math.random()*(ranges.m_g[1]-ranges.m_g[0]),
+          Ifac:ranges.Ifac[0]+Math.random()*(ranges.Ifac[1]-ranges.Ifac[0])
+        });
+      }
+      // Always include actual dataset points as anchors; model still predicts outputs.
+      for(const d of designs) arr.push({k_r:d.k_r,m_g:d.m_g,Ifac:d.Ifac});
+      return arr;
+    }
+    function optimize(){
+      $('taskStatus').textContent='searching';
+      const H=+$('targetH').value, S=+$('targetSpin').value, maxB=+$('maxB').value, maxM=+$('maxM').value, obj=$('objective').value;
+      const candidates=sampleCandidates(1600).map(q=>({...q,...deeponet(q)}));
+      const feasible=candidates.filter(d=>d.m_g<=maxM && d.Btrig_hi_T<=maxB);
+      const pool=(feasible.length?feasible:candidates).map(d=>{
+        const hErr=Math.abs(d.Hcom_mm-H)/45;
+        const sErr=Math.abs(d.spin_radms-S)/0.10;
+        const bCost=(d.Btrig_hi_T-ranges.Btrig_hi_T[0])/(ranges.Btrig_hi_T[1]-ranges.Btrig_hi_T[0]);
+        const mCost=(d.m_g-ranges.m_g[0])/(ranges.m_g[1]-ranges.m_g[0]);
+        let score;
+        if(obj==='height') score=-d.Hcom_mm/150 + 0.25*bCost + 0.15*mCost;
+        else if(obj==='field') score=(d.Btrig_hi_T/maxB) + 0.55*hErr + 0.35*sErr;
+        else if(obj==='balanced') score=0.42*hErr + 0.35*sErr + 0.13*bCost + 0.10*mCost;
+        else score=0.55*hErr + 0.45*sErr + 0.05*bCost;
+        return {...d,score};
+      }).sort((a,b)=>a.score-b.score).slice(0,6);
+      const rows=['<tr><th>rank</th><th>score</th><th>k_r</th><th>m(g)</th><th>I_fac</th><th>H</th><th>spin</th><th>B_hi</th><th>FEM next</th></tr>'];
+      pool.forEach((d,i)=>rows.push(`<tr><td>OPT-${i+1}</td><td>${d.score.toFixed(3)}</td><td>${d.k_r.toFixed(4)}</td><td>${d.m_g.toFixed(2)}</td><td>${d.Ifac.toFixed(2)}</td><td>${d.Hcom_mm.toFixed(1)}</td><td>${d.spin_radms.toFixed(3)}</td><td>${d.Btrig_hi_T.toFixed(2)}</td><td>${gateLabel(d)}</td></tr>`));
+      $('optTable').innerHTML=rows.join('');
+      $('taskStatus').textContent='ready';
+      $('status').textContent=`Candidate search finished: ${pool.length} displayed from ${feasible.length || designs.length} ${feasible.length?'feasible':'unfiltered'} designs.`;
+    }
+    $('run').onclick=update; $('inverse').onclick=()=>{inverse(); optimize()}; $('optimize').onclick=optimize;
+    $('random').onclick=()=>{const d=designs[Math.floor(Math.random()*designs.length)]; $('kr').value=$('krn').value=d.k_r; $('mg').value=$('mgn').value=d.m_g; $('ifac').value=$('ifacn').value=d.Ifac; update()};
+    update(); inverse(); optimize();
+  </script>
+</body>
+</html>
